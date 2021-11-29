@@ -25,7 +25,7 @@ dropout_amount = 0.4
 input_shape = (28, 28, 1)
 
 
-def prepare_data(classes = num_classes, data_path = basepath): # visualize this. show the MNIST data set
+def prepare_data(classes = num_classes, data_path = basepath):
     (x_train, y_train), (x_test, y_test) = mnist.load_data()
 
     x_train = x_train.reshape(x_train.shape[0], 28, 28, 1)
@@ -41,7 +41,8 @@ def prepare_data(classes = num_classes, data_path = basepath): # visualize this.
 
     return [x_train, y_train, x_test, y_test]
 
-def visualize_data(x_train, y_train):
+
+def visualize_data(x_train, y_train):  # finish this. show the MNIST data set
     num = 10
     images = x_train[:num].squeeze()
     labels = y_train[:num] # parse this better
