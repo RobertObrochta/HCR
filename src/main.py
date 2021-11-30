@@ -1,7 +1,8 @@
 
 import tensorflow as tf
 import keras
-from keras.datasets import mnist
+from extra_keras_datasets import emnist
+
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense, Dropout, Flatten, Conv2D, MaxPooling2D
 from keras import backend as K
@@ -11,14 +12,13 @@ import matplotlib.pyplot as plt
 
 import os
 
-basepath = os.getcwd()[:-4] # gets everything until /src
+basepath = os.getcwd()[:-4]
 
-# creates this directory
 if not os.path.isdir(f"{basepath}/results"):
     os.mkdir(f"{basepath}/results")
 
 # model configurations
-num_classes = 36
+num_classes = 36 # 10 digits (0 - 9) + 26 letters (a-z)
 batch_size = 256
 epochs = 1
 loss_function = "adam"
@@ -27,7 +27,18 @@ input_shape = (28, 28, 1)
 
 
 def prepare_data(classes = num_classes, data_path = basepath):
-    (x_train, y_train), (x_test, y_test) = mnist.load_data()
+    (dig_x_train, dig_y_train), (dig_x_test, dig_y_test) = emnist.load_data(type = 'mnist')
+    (let_x_train, let_y_train), (let_x_test, let_y_test) = emnist.load_data(type = 'letters')
+    # increment letter labels by + 9 in order to offset the digit labels already taking up the labels 0 - 9
+    for i in range(0, len(let_y_train)):
+        let_y_train[i] += 9
+    for i in range(0, len(let_y_test)):
+        let_y_test[i] += 9
+
+    x_train = np.concatenate((let_x_train, dig_x_train), axis = 0)
+    y_train = np.concatenate((let_y_train, dig_y_train), axis = 0)
+    x_test = np.concatenate((let_x_test, dig_x_test), axis = 0)
+    y_test = np.concatenate((let_y_test, dig_y_test), axis = 0)
 
     x_train = x_train.reshape(x_train.shape[0], 28, 28, 1)
     x_test = x_test.reshape(x_test.shape[0], 28, 28, 1)
@@ -44,11 +55,11 @@ def prepare_data(classes = num_classes, data_path = basepath):
 
 
 def visualize_data(x_train, y_train): 
-    num = 15
+    num = 25
     images = x_train[:num].squeeze()
     labels = y_train[:num]
 
-    num_row = 3
+    num_row = 5
     num_col = 5 
     fig, axes = plt.subplots(num_row, num_col, figsize=(1.5 * num_col, 2 * num_row))
     for i in range(num):
@@ -73,7 +84,7 @@ def create_model(shape = input_shape, dropout = dropout_amount, optim = loss_fun
     model.add(Flatten())
     model.add(Dense(240, activation = 'relu')) 
     model.add(Dropout(0.4))
-    model.add(Dense(classes, activation = 'softmax')) 
+    model.add(Dense(num_classes, activation = 'softmax')) 
     model.compile(loss = keras.losses.categorical_crossentropy, optimizer = optim, metrics = ['accuracy'])
 
     return model
@@ -185,12 +196,12 @@ End of Driver Code _____________________________________________________________
  ------------------------------------------------------------------------------------------------------------------------ 
  model file           : /home/stm32mp1/Robert/HCR/results/AI_Model_model-ABC123-112.h5 
  type                 : keras 
- c_name               : network 
- workspace dir        : /tmp/mxAI_workspace244327730524558883174821465103158 
+ c_name               : network_3 
+ workspace dir        : /tmp/mxAI_workspace137168132698079260628899292301142 
  output dir           : /home/stm32mp1/.stm32cubemx 
   
  model_name           : AI_Model_modelABC123112 
- model_hash           : f660fa28f0e44c784a62463fbdc802ab 
+ model_hash           : 0100ba309f36706e13e9945d825d29c8 
  input                : input_0 [784 items, 3.06 KiB, ai_float, float, (1, 28, 28, 1)] 
  inputs (total)       : 3.06 KiB 
  output               : dense_1_nl [36 items, 144 B, ai_float, float, (1, 1, 1, 36)] 
