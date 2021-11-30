@@ -5,6 +5,7 @@ from keras.datasets import mnist
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense, Dropout, Flatten, Conv2D, MaxPooling2D
 from keras import backend as K
+import numpy as np
 
 import matplotlib.pyplot as plt
 
@@ -42,18 +43,18 @@ def prepare_data(classes = num_classes, data_path = basepath):
     return [x_train, y_train, x_test, y_test]
 
 
-def visualize_data(x_train, y_train):  # finish this. show the MNIST data set
-    num = 10
+def visualize_data(x_train, y_train): 
+    num = 15
     images = x_train[:num].squeeze()
-    labels = y_train[:num] # parse this better
+    labels = y_train[:num]
 
-    num_row = 2
-    num_col = 5 # plot images
+    num_row = 3
+    num_col = 5 
     fig, axes = plt.subplots(num_row, num_col, figsize=(1.5 * num_col, 2 * num_row))
     for i in range(num):
         ax = axes[i // num_col, i % num_col]
         ax.imshow(images[i], cmap='gray')
-        ax.set_title(f'Label: {labels[i][i]}')
+        ax.set_title(f'Label: {int(labels[i].nonzero()[0])}')
     plt.tight_layout()
     plt.show()
     
