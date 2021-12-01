@@ -19,7 +19,7 @@ if not os.path.isdir(f"{basepath}/results"):
     os.mkdir(f"{basepath}/results")
 
 # model configurations
-num_classes = 36 # 10 digits (0 - 9) + 26 letters (a-z)
+num_classes = 36 # 10 digits (0 - 9) + 26 letters (a - z)
 batch_size = 256
 epochs = 1
 loss_function = "adam"
@@ -27,7 +27,7 @@ dropout_amount = 0.4
 input_shape = (28, 28, 1)
 
 
-def prepare_data(classes = num_classes, data_path = basepath):
+def prepare_data(classes = num_classes):
     (dig_x_train, dig_y_train), (dig_x_test, dig_y_test) = emnist.load_data(type = 'mnist')
     (let_x_train, let_y_train), (let_x_test, let_y_test) = emnist.load_data(type = 'letters')
     # increment letter labels by + 9 in order to offset the digit labels already taking up the labels 0 - 9
