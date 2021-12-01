@@ -11,6 +11,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 import os
+import random
 
 basepath = os.getcwd()[:-4]
 
@@ -55,9 +56,11 @@ def prepare_data(classes = num_classes, data_path = basepath):
 
 
 def visualize_data(x_train, y_train): 
-    num = 25
-    images = x_train[:num].squeeze()
-    labels = y_train[:num]
+    num = 25 # choose 25 samples
+    starting_point = random.randint(0, len(x_train) - num) # start somewhere up until the end - num
+    ending_point = starting_point + num + 1 # end #num samples after that point
+    images = x_train[starting_point:ending_point].squeeze()
+    labels = y_train[starting_point:ending_point]
 
     num_row = 5
     num_col = 5 
@@ -69,7 +72,6 @@ def visualize_data(x_train, y_train):
     plt.tight_layout()
     plt.show()
     
-
 
 def create_model(shape = input_shape, dropout = dropout_amount, optim = loss_function, classes = num_classes):
     # model creation (review this section. have it match the bottom string block)
@@ -90,6 +92,14 @@ def create_model(shape = input_shape, dropout = dropout_amount, optim = loss_fun
     return model
 
 
+def testing_visualization(x_test, y_test):
+    score = model.evaluate(x_test, y_test, verbose = 1)
+    print('\nTest loss:', score[0])
+    print('Test accuracy:', score[1])
+
+    return
+
+
 '''
 Driver Code ____________________________________________________________________________________________________________________________________
 '''
@@ -103,10 +113,8 @@ model_path = model.save(f'{basepath}/results/AI_Model_model-ABC123-112.h5')
 print(f"Saving the model at {basepath}/results/AI_Model_model-ABC123-112.h5")
 
 
-# testing evaluation ==> visualize this as well, how many it got right and wrong
-score = model.evaluate(t_t_data[2], t_t_data[3], verbose = 1)
-print('Test loss:', score[0])
-print('Test accuracy:', score[1])
+# testing and visualization of the metrics ==> visualize this as well, how many it got right and wrong
+testing_visualization(t_t_data[2], t_t_data[3])
 
 '''
 End of Driver Code _____________________________________________________________________________________________________________________________
