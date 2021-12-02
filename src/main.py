@@ -74,7 +74,6 @@ def visualize_data(x_train, y_train):
     
 
 def create_model(shape = input_shape, dropout = dropout_amount, optim = loss_function, classes = num_classes):
-    # model creation (review this section. have it match the bottom string block)
     model = Sequential()
     model.add(Conv2D(8, kernel_size = (3, 3), activation = 'relu', input_shape = shape)) 
     model.add(Conv2D(8, (3, 3), activation = 'relu')) 
@@ -100,6 +99,22 @@ def testing_visualization(x_test, y_test):
     return
 
 
+# plot diagnostic learning curves
+def summarize_diagnostics(histories):
+	for i in range(len(histories)):
+		# plot loss
+		plt.subplot(2, 1, 1)
+		plt.title('Cross Entropy Loss')
+		plt.plot(histories[i].history['loss'], color='blue', label='train')
+		plt.plot(histories[i].history['val_loss'], color='orange', label='test')
+		# plot accuracy
+		plt.subplot(2, 1, 2)
+		plt.title('Classification Accuracy')
+		plt.plot(histories[i].history['accuracy'], color='blue', label='train')
+		plt.plot(histories[i].history['val_accuracy'], color='orange', label='test')
+	plt.show()
+
+
 '''
 Driver Code ____________________________________________________________________________________________________________________________________
 '''
@@ -115,6 +130,7 @@ print(f"Saving the model at {basepath}/results/AI_Model_model-ABC123-112.h5")
 
 # testing and visualization of the metrics ==> visualize this as well, how many it got right and wrong
 testing_visualization(t_t_data[2], t_t_data[3])
+summarize_diagnostics(history)
 
 '''
 End of Driver Code _____________________________________________________________________________________________________________________________
