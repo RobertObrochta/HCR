@@ -9,6 +9,7 @@ from keras import backend as K
 import numpy as np
 
 import matplotlib.pyplot as plt
+import seaborn as sns
 
 import os
 import random
@@ -45,6 +46,8 @@ def prepare_data(classes = num_classes):
 
     x_train = x_train.reshape(x_train.shape[0], 28, 28, 1)
     x_test = x_test.reshape(x_test.shape[0], 28, 28, 1)
+    
+    unchanged_labels = y_test # keep original test labels before they get conv. to binary matrix
 
     # convert vectors to binary matrices
     y_train = tf.keras.utils.to_categorical(y_train, classes)
@@ -54,7 +57,7 @@ def prepare_data(classes = num_classes):
     x_train /= 255
     x_test /= 255
 
-    return [x_train, y_train, x_test, y_test]
+    return [x_train, y_train, x_test, y_test, unchanged_labels]
 
 
 def visualize_data(x_train, y_train): 
@@ -94,11 +97,16 @@ def create_model(shape = input_shape, dropout = dropout_amount, optim = loss_fun
 
 
 def testing_visualization(x_test, y_test):
-    score = model.evaluate(x_test, y_test, verbose = 1)
-    print('\nTest loss:', score[0])
-    print('Test accuracy:', score[1])
+    y_pred = np.argmax(model.predict(x_test), axis = 1) # Predicted labels
 
-    return
+    confusion_mtx = tf.math.confusion_matrix(y_test, y_pred, num_classes = num_classes) 
+    plt.figure(figsize=(10, 8))
+    ax = plt.axes()
+    ax.set_title("Handwriting Character Recognition Prediction Results")
+    sns.heatmap(confusion_mtx, annot = False, ax = ax)
+    plt.xlabel('Predicted Label')
+    plt.ylabel('Actual Label')
+    plt.show()
 
 
 '''
@@ -109,14 +117,18 @@ t_t_data = prepare_data()
 visualize_data(t_t_data[0], t_t_data[1])
 
 #training and testing, then saving
-
 history = model.fit(t_t_data[0], t_t_data[1], batch_size = batch_size, epochs = epochs, verbose = 1, validation_data = (t_t_data[2], t_t_data[3]))
 model_path = model.save(f'{basepath}/results/AI_Model_model-ABC123-112.h5')
 print(f"Saving the model at {basepath}/results/AI_Model_model-ABC123-112.h5")
 
+# Final Score in terminal
+score = model.evaluate(t_t_data[2], t_t_data[3], verbose = 1)
+print('\nTest loss:', score[0])
+print('Test accuracy:', score[1])
 
-# testing and visualization of the metrics ==> visualize this as well, how many it got right and wrong
-testing_visualization(t_t_data[2], t_t_data[3])
+# testing and visualization of the metrics
+print("\nLaunching prediction accuracy heatmap...")
+testing_visualization(t_t_data[2], t_t_data[4])
 
 '''
 End of Driver Code _____________________________________________________________________________________________________________________________
