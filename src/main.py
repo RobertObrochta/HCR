@@ -12,7 +12,9 @@ import matplotlib.pyplot as plt
 
 import os
 import random
+import datetime
 
+os.chdir('/home/stm32mp1/Robert/HCR/src') # can now run in any directory on the terminal. This changes the pwd at runtime
 basepath = os.getcwd()[:-4]
 
 if not os.path.isdir(f"{basepath}/results"):
@@ -99,22 +101,6 @@ def testing_visualization(x_test, y_test):
     return
 
 
-# plot diagnostic learning curves
-def summarize_diagnostics(histories):
-	for i in range(len(histories)):
-		# plot loss
-		plt.subplot(2, 1, 1)
-		plt.title('Cross Entropy Loss')
-		plt.plot(histories[i].history['loss'], color='blue', label='train')
-		plt.plot(histories[i].history['val_loss'], color='orange', label='test')
-		# plot accuracy
-		plt.subplot(2, 1, 2)
-		plt.title('Classification Accuracy')
-		plt.plot(histories[i].history['accuracy'], color='blue', label='train')
-		plt.plot(histories[i].history['val_accuracy'], color='orange', label='test')
-	plt.show()
-
-
 '''
 Driver Code ____________________________________________________________________________________________________________________________________
 '''
@@ -123,6 +109,7 @@ t_t_data = prepare_data()
 visualize_data(t_t_data[0], t_t_data[1])
 
 #training and testing, then saving
+
 history = model.fit(t_t_data[0], t_t_data[1], batch_size = batch_size, epochs = epochs, verbose = 1, validation_data = (t_t_data[2], t_t_data[3]))
 model_path = model.save(f'{basepath}/results/AI_Model_model-ABC123-112.h5')
 print(f"Saving the model at {basepath}/results/AI_Model_model-ABC123-112.h5")
@@ -130,7 +117,6 @@ print(f"Saving the model at {basepath}/results/AI_Model_model-ABC123-112.h5")
 
 # testing and visualization of the metrics ==> visualize this as well, how many it got right and wrong
 testing_visualization(t_t_data[2], t_t_data[3])
-summarize_diagnostics(history)
 
 '''
 End of Driver Code _____________________________________________________________________________________________________________________________
