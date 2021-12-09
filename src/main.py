@@ -5,6 +5,7 @@ from extra_keras_datasets import emnist
 
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense, Dropout, Flatten, Conv2D, MaxPooling2D
+import tensorflow_model_optimization as tfmot
 from keras import backend as K
 import numpy as np
 
@@ -109,6 +110,37 @@ def testing_visualization(x_test, y_test):
     plt.show()
 
 
+def representative_dataset():
+  for data in tf.data.Dataset.from_tensor_slices((prepare_data()[0])).batch(1).take(100):
+    yield [tf.dtypes.cast(data, tf.float32)]
+
+
+def representative_data_gen():
+  for input_value in tf.data.Dataset.from_tensor_slices(prepare_data()[0]).batch(1).take(100):
+    yield [input_value]
+
+# for 8-bit integer quantization --> inferencing on the MP1
+def to_tflite(keras_model):
+    # convert to tflite model for deployment, quantizing it in the process
+    tflite_converter = tf.lite.TFLiteConverter.from_keras_model(keras_model)
+    tflite_converter.optimizations = [tf.lite.Optimize.DEFAULT]
+    tflite_converter.representative_dataset = representative_data_gen
+    tflite_converter.target_spec.supported_ops = [tf.lite.OpsSet.TFLITE_BUILTINS_INT8]
+    tflite_converter.inference_input_type = tf.uint8
+    tflite_converter.inference_output_type = tf.uint8
+    tflite_contents = tflite_converter.convert()
+
+    # verification that the I/O is uint8 datatypes
+    interpreter = tf.lite.Interpreter(model_content = tflite_contents)
+    input_type = interpreter.get_input_details()[0]['dtype']
+    print('input: ', input_type)
+    output_type = interpreter.get_output_details()[0]['dtype']
+    print('output: ', output_type)
+    print(f"\nSaving the quantized TFLite model at {basepath}/results/STM-HCR.tflite")
+    with tf.io.gfile.GFile(f"{basepath}/results/STM-HCR.tflite", "wb") as file: # ready for CubeMX, parameters **don't** match what was given by AI team
+        file.write(tflite_contents)
+
+
 '''
 Driver Code ____________________________________________________________________________________________________________________________________
 '''
@@ -116,9 +148,9 @@ model = create_model()
 t_t_data = prepare_data()
 visualize_data(t_t_data[0], t_t_data[1])
 
-#training and testing, then saving
+# training and testing, then saving
 history = model.fit(t_t_data[0], t_t_data[1], batch_size = batch_size, epochs = epochs, verbose = 1, validation_data = (t_t_data[2], t_t_data[3]))
-model_path = model.save(f'{basepath}/results/AI_Model_model-ABC123-112.h5')
+model_path = model.save(f'{basepath}/results/AI_Model_model-ABC123-112.h5') # original model, matches the original given by the AI team
 print(f"Saving the model at {basepath}/results/AI_Model_model-ABC123-112.h5")
 
 # Final Score in terminal
@@ -129,6 +161,11 @@ print('Test accuracy:', score[1])
 # testing and visualization of the metrics
 print("\nLaunching prediction accuracy heatmap...")
 testing_visualization(t_t_data[2], t_t_data[4])
+
+# load model then 
+keras_model = tf.keras.models.load_model(f"{basepath}/results/AI_Model_model-ABC123-112.h5")
+to_tflite(keras_model)
+
 
 '''
 End of Driver Code _____________________________________________________________________________________________________________________________
